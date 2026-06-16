@@ -39,6 +39,9 @@ out/
 ### docs ###
 /docs
 
+### Codex ###
+/AGENTS.md
+
 ### Environment ###
 .env
 .env.*
