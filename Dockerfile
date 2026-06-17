@@ -5,7 +5,7 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /app
 
 # Gradle 빌드 결과물 jar 경로를 빌드 인자로 지정
-ARG JAR_FILE=build/libs/*.jar
+ARG JAR_FILE=build/libs/*SNAPSHOT.jar
 
 # 빌드된 jar 파일을 컨테이너 내부 project.jar로 복사
 COPY ${JAR_FILE} project.jar
