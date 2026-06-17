@@ -1,103 +1,110 @@
+# Docker Hub를 이용한 Spring Boot CI/CD 파이프라인
+name: CI/CD Pipeline Docker Hub
 
-  # Docker Hub를 이용한 Spring Boot CI/CD 파이프라인
-  name: CI/CD Pipeline Docker Hub
+on:
+  # main 브랜치에 push되면 자동 배포 실행
+  push:
+    branches:
+      - main
 
-  on:
-    # main 브랜치에 push되면 자동 배포 실행
-    push:
-      branches:
-        - main
+  # GitHub Actions 화면에서 수동 실행 가능
+  workflow_dispatch:
 
-    # GitHub Actions 화면에서 수동 실행 가능
-    workflow_dispatch:
+jobs:
+  build:
+    # GitHub Actions에서 제공하는 Ubuntu 환경에서 빌드 진행
+    runs-on: ubuntu-latest
 
-  jobs:
-    build:
-      # GitHub Actions에서 제공하는 Ubuntu 환경에서 빌드 진행
-      runs-on: ubuntu-latest
+    steps:
+      # 1. GitHub 레포지토리 코드 가져오기
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-      steps:
-        # 1. GitHub 레포지토리 코드 가져오기
-        - name: Checkout source code
-          uses: actions/checkout@v4
+      # 2. Java 21 설정
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-        # 2. Java 21 설정
-        - name: Set up JDK 21
-          uses: actions/setup-java@v4
-          with:
-            distribution: temurin
-            java-version: 21
+      # 3. Gradle 실행 권한 부여
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
 
-        # 3. Gradle 실행 권한 부여
-        - name: Grant execute permission for Gradle
-          run: chmod +x gradlew
+      # 4. Gradle 캐시 및 빌드 환경 설정
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-        # 4. Gradle 캐시 및 빌드 환경 설정
-        - name: Set up Gradle
-          uses: gradle/actions/setup-gradle@v4
+      # 5. Spring Boot jar 빌드
+      # 현재는 테스트를 제외하고 빌드
+      - name: Build Spring Boot jar
+        run: ./gradlew clean build -x test
 
-        # 5. Spring Boot jar 빌드
-        # 현재는 테스트를 제외하고 빌드
-        - name: Build Spring Boot jar
-          run: ./gradlew clean build -x test
+      # 6. Docker Hub 로그인
+      # GitHub Secrets에 저장된 Docker Hub 계정 정보 사용
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
-        # 6. Docker Hub 로그인
-        # GitHub Secrets에 저장된 Docker Hub 계정 정보 사용
-        - name: Login to Docker Hub
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_TOKEN }}
+      # 7. Docker Buildx 설정
+      # Docker 이미지를 빌드하고 push하기 위한 빌더 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-        # 7. Docker Buildx 설정
-        # Docker 이미지를 빌드하고 push하기 위한 빌더 설정
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
+      # 8. Docker 이미지 빌드 후 Docker Hub에 push
+      # latest 태그와 커밋 SHA 태그를 함께 생성
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
 
-        # 8. Docker 이미지 빌드 후 Docker Hub에 push
-        # latest 태그와 커밋 SHA 태그를 함께 생성
-        - name: Build and push Docker image
-          uses: docker/build-push-action@v6
-          with:
-            context: .
-            push: true
-            platforms: linux/amd64
-            tags: |
-              ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
-              ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+  deploy:
+    # build 작업이 성공해야 deploy 실행
+    needs: build
+    runs-on: ubuntu-latest
 
-    deploy:
-      # build 작업이 성공해야 deploy 실행
-      needs: build
-      runs-on: ubuntu-latest
+    steps:
+      # 9. EC2에 SSH 접속해서 Docker Hub 이미지 pull 후 컨테이너 재실행
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # 사용할 Docker 이미지와 컨테이너 이름을 변수로 정의
+            IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest"
+            CONTAINER="${{ secrets.DOCKER_IMAGENAME }}"
 
-      steps:
-        # 9. EC2에 SSH 접속해서 Docker Hub 이미지 pull 후 컨테이너 재실행
-        - name: Deploy to EC2
-          uses: appleboy/ssh-action@v1.0.3
-          with:
-            host: ${{ secrets.EC2_HOST }}
-            username: ${{ secrets.EC2_USERNAME }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            port: 22
-            script: |
-              # 기존 컨테이너 중지
-              # 컨테이너가 없어도 배포가 실패하지 않도록 true 처리
-              docker stop ${{ secrets.DOCKER_IMAGENAME }} || true
-              
-              # 기존 컨테이너 삭제
-              docker rm ${{ secrets.DOCKER_IMAGENAME }} || true
-              
-              # Docker Hub에서 최신 이미지 가져오기
-              docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
-              
-              # 새 컨테이너 실행
-              # EC2의 8080 포트와 컨테이너의 8080 포트를 연결
-              # EC2에 미리 만들어 둔 ~/app/.env 파일 사용
-              docker run -d \
-                --name ${{ secrets.DOCKER_IMAGENAME }} \
-                --restart unless-stopped \
-                -p 8080:8080 \
-                --env-file ~/app/.env \
-                ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
- 
+            # Docker Hub에서 최신 이미지 먼저 가져오기
+            # pull이 실패하면 기존 컨테이너를 건드리지 않고 배포가 중단됨
+            docker pull $IMAGE
+
+            # 기존 컨테이너 중지
+            # 컨테이너가 없어도 배포가 실패하지 않도록 true 처리
+            docker stop $CONTAINER || true
+
+            # 기존 컨테이너 삭제
+            docker rm $CONTAINER || true
+
+            # 새 컨테이너 실행
+            # EC2의 8080 포트와 컨테이너의 8080 포트를 연결
+            # EC2에 미리 만들어 둔 ~/app/.env 파일 사용
+            docker run -d \
+              --name $CONTAINER \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              --env-file ~/app/.env \
+              $IMAGE
+
+            # 현재 사용하지 않는 dangling Docker image 정리
+            # 이전 배포 과정에서 남은 불필요한 이미지 레이어를 제거
+            docker image prune -f
