@@ -1,5 +1,7 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.notification.controller.docs;
 
+import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +22,9 @@ public interface NotificationControllerDocs {
             description = "읽지 않은 알림 목록을 최신순으로 조회합니다.",
             operationId = "getNotifications"
     )
-    ResponseEntity<ApiResponse<NotificationListResponse>> getNotifications();
+    ResponseEntity<ApiResponse<NotificationListResponse>> getNotifications(
+            @Parameter(hidden = true) @CurrentUserId Long userId
+    );
 
     @Operation(
             summary = "알림 읽음 처리",
@@ -28,6 +32,7 @@ public interface NotificationControllerDocs {
             operationId = "readNotification"
     )
     ResponseEntity<ApiResponse<NotificationListResponse>> readNotification(
+            @Parameter(hidden = true) @CurrentUserId Long userId,
             @PathVariable Long notificationId,
             @Valid @RequestBody NotificationReadRequest request
     );
