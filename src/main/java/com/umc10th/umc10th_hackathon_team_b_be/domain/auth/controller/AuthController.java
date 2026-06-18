@@ -8,6 +8,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueR
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.AuthService;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
+import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +47,11 @@ public class AuthController implements AuthControllerDocs {
 
     @Override
     @DeleteMapping("/auth-sessions/current")
-    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody AuthLogoutRequest request) {
-        authService.logout(request);
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody AuthLogoutRequest request,
+            @CurrentUserId Long userId
+    ) {
+        authService.logout(request, userId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 }

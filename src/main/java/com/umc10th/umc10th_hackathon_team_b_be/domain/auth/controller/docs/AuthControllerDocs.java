@@ -8,6 +8,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueR
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
@@ -21,6 +22,6 @@ public interface AuthControllerDocs {
     ResponseEntity<ApiResponse<AuthTokenReissueResponse>> reissueAuthToken(AuthTokenReissueRequest request);
 
     @Operation(summary = "로그아웃", description = "refresh token을 검증하고 무효화합니다.")
-    ResponseEntity<ApiResponse<Void>> logout(AuthLogoutRequest request);
+    ResponseEntity<ApiResponse<Void>> logout(AuthLogoutRequest request, @Parameter(hidden = true) Long userId);
 
 }
