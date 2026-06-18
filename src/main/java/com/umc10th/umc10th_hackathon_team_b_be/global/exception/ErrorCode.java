@@ -17,7 +17,10 @@ public enum ErrorCode {
 	AUTH_401(HttpStatus.UNAUTHORIZED, "AUTH_401", "인증이 필요합니다."),
 	AUTH_400(HttpStatus.BAD_REQUEST, "AUTH_400", "유효하지 않은 로그인 요청입니다."),
 	USER_404(HttpStatus.NOT_FOUND, "USER_404", "사용자를 찾을 수 없습니다."),
-	TERMS_400(HttpStatus.BAD_REQUEST, "TERMS_400", "필수 약관에 모두 동의해야 합니다.");
+	TERMS_400(HttpStatus.BAD_REQUEST, "TERMS_400", "필수 약관에 모두 동의해야 합니다."),
+
+    // --- Notification 도메인 예외 코드 ---
+    NOTIFICATION_404(HttpStatus.NOT_FOUND, "NOTIFICATION_404", "알림을 찾을 수 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

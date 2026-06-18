@@ -67,6 +67,11 @@ public class Notification {
     @Column(name = "is_read", nullable = false, columnDefinition = "boolean default false")
     private Boolean isRead = false;
 
+    public void markAsRead(LocalDateTime readAt) {
+        this.isRead = true;
+        this.readAt = readAt;
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
