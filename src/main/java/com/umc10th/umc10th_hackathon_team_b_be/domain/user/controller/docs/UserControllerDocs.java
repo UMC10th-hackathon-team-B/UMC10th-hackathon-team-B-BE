@@ -12,7 +12,8 @@ public interface UserControllerDocs {
 
     @Operation(
             summary = "신규 사용자 생성 및 필수 약관 동의",
-            description = "가입 토큰과 필수 약관 동의 목록을 검증하고 신규 사용자를 생성합니다."
+            description = "가입 토큰과 필수 약관 동의 목록을 검증하고 신규 사용자를 생성합니다.",
+            operationId = "signup"
     )
     ResponseEntity<ApiResponse<UserSignupResponse>> signup(UserSignupRequest request);
 }
