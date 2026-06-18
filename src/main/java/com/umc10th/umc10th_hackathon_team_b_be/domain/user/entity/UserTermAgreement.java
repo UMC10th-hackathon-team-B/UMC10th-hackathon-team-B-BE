@@ -2,6 +2,7 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity;
 
 import java.time.LocalDateTime;
 
+import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.enums.TermType;
@@ -60,4 +61,12 @@ public class UserTermAgreement {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    // 약관 동의 저장을 위한 빌더 추가
+    @Builder
+    public UserTermAgreement(User user, TermType termType) {
+        this.user = user;
+        this.termType = termType;
+        this.agreedAt = java.time.LocalDateTime.now(); // 동의 시점 현재 시간
+    }
 }

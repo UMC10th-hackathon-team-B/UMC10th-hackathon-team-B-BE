@@ -3,6 +3,7 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -54,4 +55,10 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    // 신규 유저 생성을 위한 빌더 추가
+    @Builder
+    public User(String kakaoId) {
+        this.kakaoId = kakaoId;
+    }
 }
