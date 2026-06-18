@@ -95,7 +95,7 @@ public class AuthService {
 
     @Transactional
     public AuthTokenReissueResponse reissueAuthTokens(AuthTokenReissueRequest request) {
-        RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken());
+        RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken(), null);
         savedRefreshToken.revoke(LocalDateTime.now());
 
         IssuedAuthTokens issuedAuthTokens = authTokenIssueService.issueTokens(savedRefreshToken.getUser());
@@ -110,12 +110,12 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(AuthLogoutRequest request) {
-        RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken());
+    public void logout(AuthLogoutRequest request, Long userId) {
+        RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken(), userId);
         savedRefreshToken.revoke(LocalDateTime.now());
     }
 
-    private RefreshToken validateRefreshToken(String refreshToken) {
+    private RefreshToken validateRefreshToken(String refreshToken, Long expectedUserId) {
         Long userId = extractUserIdFromRefreshToken(refreshToken);
         String refreshTokenHash = authTokenIssueService.hashToken(refreshToken);
 
@@ -127,6 +127,10 @@ public class AuthService {
         }
 
         if (!savedRefreshToken.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.AUTH_401);
+        }
+
+        if (expectedUserId != null && !expectedUserId.equals(savedRefreshToken.getUser().getId())) {
             throw new BusinessException(ErrorCode.AUTH_401);
         }
 
