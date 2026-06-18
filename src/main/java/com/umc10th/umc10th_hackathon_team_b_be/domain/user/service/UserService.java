@@ -1,5 +1,7 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.user.service;
 
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.IssuedAuthTokens;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.AuthTokenIssueService;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.dto.UserSignupRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.dto.UserSignupResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
@@ -9,8 +11,6 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserReposi
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserTermAgreementRepository;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.BusinessException;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.ErrorCode;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +32,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserTermAgreementRepository userTermAgreementRepository;
+    private final AuthTokenIssueService authTokenIssueService;
 
     @Transactional
     public UserSignupResponse signup(UserSignupRequest request) {
@@ -52,10 +53,18 @@ public class UserService {
 
         userTermAgreementRepository.saveAll(termAgreements);
 
+        IssuedAuthTokens issuedAuthTokens = authTokenIssueService.issueTokens(user);
+
         return UserSignupResponse.builder()
                 .nextScreen("HOME")
                 .userId(user.getId())
-                .auth(buildMockAuthTokenInfo())
+                .auth(UserSignupResponse.AuthTokenInfo.builder()
+                        .tokenType(issuedAuthTokens.getTokenType())
+                        .accessToken(issuedAuthTokens.getAccessToken())
+                        .accessTokenExpiresInSeconds(issuedAuthTokens.getAccessTokenExpiresInSeconds())
+                        .refreshToken(issuedAuthTokens.getRefreshToken())
+                        .refreshTokenExpiresAt(issuedAuthTokens.getRefreshTokenExpiresAt())
+                        .build())
                 .build();
     }
 
@@ -84,17 +93,5 @@ public class UserService {
         if (!agreedTermTypeSet.containsAll(REQUIRED_TERM_TYPES)) {
             throw new BusinessException(ErrorCode.TERMS_400);
         }
-    }
-
-    private UserSignupResponse.AuthTokenInfo buildMockAuthTokenInfo() {
-        return UserSignupResponse.AuthTokenInfo.builder()
-                .tokenType("Bearer")
-                .accessToken("mock-access-token")
-                .accessTokenExpiresInSeconds(1800)
-                .refreshToken("mock-refresh-token")
-                .refreshTokenExpiresAt(
-                        LocalDateTime.now().plusDays(30).withNano(0).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                )
-                .build();
     }
 }

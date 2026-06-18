@@ -18,6 +18,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -59,4 +60,11 @@ public class RefreshToken {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Builder
+    public RefreshToken(User user, String tokenHash, LocalDateTime expiresAt) {
+        this.user = user;
+        this.tokenHash = tokenHash;
+        this.expiresAt = expiresAt;
+    }
 }

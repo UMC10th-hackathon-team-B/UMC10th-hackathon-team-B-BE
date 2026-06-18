@@ -2,7 +2,7 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionResponse;
-
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.IssuedAuthTokens;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.KakaoUserInfoResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserRepository;
@@ -20,11 +20,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-     private final KakaoApiClient kakaoApiClient;
-     private final UserRepository userRepository;
-    // private final JwtTokenProvider jwtTokenProvider;
+private final KakaoApiClient kakaoApiClient;
+private final UserRepository userRepository;
+    private final AuthTokenIssueService authTokenIssueService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthSessionResponse processKakaoLogin(AuthSessionRequest request) {
 
         // 1. 카카오 API 호출 시 Header에 "Bearer " 접두사 필수
@@ -46,24 +46,23 @@ public class AuthService {
         Optional<User> userOptional = userRepository.findByKakaoId(kakaoId);
 
         // 3. 기존 가입자 (HOME 이동)
-         if (userOptional.isPresent()) {
-             User user = userOptional.get();
-             return handleExistingUser(userOptional.get()); // HOME 응답 객체 생성 및 JWT 발급
-         }
-         // 4. 신규 사용자 (TERMS 이동)
-         else {
-             return handleNewUser(kakaoId); // TERMS 응답 객체 생성 및 signupToken 발급
-         }
+        if (userOptional.isPresent()) {
+            return handleExistingUser(userOptional.get()); // HOME 응답 객체 생성 및 JWT 발급
+        }
+        // 4. 신규 사용자 (TERMS 이동)
+        else {
+            return handleNewUser(kakaoId); // TERMS 응답 객체 생성 및 signupToken 발급
+        }
     }
 
     private AuthSessionResponse handleExistingUser(User user) {
-        // TODO: 실제 JwtTokenProvider를 통해 토큰 생성 로직으로 교체 필요
+        IssuedAuthTokens issuedAuthTokens = authTokenIssueService.issueTokens(user);
         AuthSessionResponse.AuthTokenInfo authTokenInfo = AuthSessionResponse.AuthTokenInfo.builder()
-                .tokenType("Bearer")
-                .accessToken("mock-access-token")
-                .accessTokenExpiresInSeconds(1800)
-                .refreshToken("mock-refresh-token")
-                .refreshTokenExpiresAt("2026-07-18T09:00:00") // 임시 하드코딩
+                .tokenType(issuedAuthTokens.getTokenType())
+                .accessToken(issuedAuthTokens.getAccessToken())
+                .accessTokenExpiresInSeconds(issuedAuthTokens.getAccessTokenExpiresInSeconds())
+                .refreshToken(issuedAuthTokens.getRefreshToken())
+                .refreshTokenExpiresAt(issuedAuthTokens.getRefreshTokenExpiresAt())
                 .build();
 
         return AuthSessionResponse.builder()
