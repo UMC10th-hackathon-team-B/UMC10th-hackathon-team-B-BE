@@ -20,7 +20,10 @@ public enum ErrorCode {
 	TERMS_400(HttpStatus.BAD_REQUEST, "TERMS_400", "필수 약관에 모두 동의해야 합니다."),
 
     // --- Notification 도메인 예외 코드 ---
-    NOTIFICATION_404(HttpStatus.NOT_FOUND, "NOTIFICATION_404", "알림을 찾을 수 없습니다.");
+    NOTIFICATION_404(HttpStatus.NOT_FOUND, "NOTIFICATION_404", "알림을 찾을 수 없습니다."),
+
+    // --- Weather 도메인 예외 코드 ---
+    WEATHER_502(HttpStatus.BAD_GATEWAY, "WEATHER_502", "날씨 정보를 불러오지 못했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
