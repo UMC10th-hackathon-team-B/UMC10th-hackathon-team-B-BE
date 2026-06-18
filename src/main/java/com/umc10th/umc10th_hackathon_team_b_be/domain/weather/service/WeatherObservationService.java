@@ -6,14 +6,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.service.NotificationService;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.client.KakaoLocalApiClient;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.EggInfoResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.OutingStartResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherInfoResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherNotificationResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherObservationResponse;
-import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.enums.UvLevel;
-import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.enums.WeatherType;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.enums.EggStatus;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.enums.UvLevel;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.client.OpenWeatherApiClient;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.external.OpenWeatherResult;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,17 +27,23 @@ public class WeatherObservationService {
     private static final LocalTime OUTING_END_TIME = LocalTime.of(20, 0);
 
     private final NotificationService notificationService;
+    private final KakaoLocalApiClient kakaoLocalApiClient;
+    private final OpenWeatherApiClient openWeatherApiClient;
 
     @Transactional(readOnly = true)
     public WeatherObservationResponse getWeatherObservation(Long userId, double latitude, double longitude) {
-        double uvIndex = 7.2;
+        String locationName = kakaoLocalApiClient.getRegionName(latitude, longitude);
+
+        OpenWeatherResult weatherResult = openWeatherApiClient.getCurrentWeather(latitude, longitude);
+
+        double uvIndex = weatherResult.uvIndex();
         UvLevel uvLevel = resolveUvLevel(uvIndex);
 
         WeatherInfoResponse weather = new WeatherInfoResponse(
-                "송파구 잠실6동",
-                WeatherType.CLEAR,
-                "맑음",
-                24.6,
+                locationName,
+                weatherResult.weatherType(),
+                weatherResult.weatherLabel(),
+                weatherResult.temperatureCelsius(),
                 uvIndex,
                 uvLevel,
                 resolveUvLevelLabel(uvLevel)

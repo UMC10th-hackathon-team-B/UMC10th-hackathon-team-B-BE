@@ -1,5 +1,7 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.weather.controller.docs;
 
+import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -18,6 +20,7 @@ public interface WeatherObservationControllerDocs {
             operationId = "getWeatherObservation"
     )
     ResponseEntity<ApiResponse<WeatherObservationResponse>> getWeatherObservation(
+            @Parameter(hidden = true) @CurrentUserId Long userId,
             @RequestParam double latitude,
             @RequestParam double longitude
     );
