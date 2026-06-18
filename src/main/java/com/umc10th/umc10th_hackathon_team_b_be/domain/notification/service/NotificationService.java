@@ -17,6 +17,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.Notificat
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.NotificationListResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.entity.Notification;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.repository.NotificationRepository;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.entity.OutingSession;
 
 import lombok.RequiredArgsConstructor;
 
@@ -119,5 +120,13 @@ public class NotificationService {
         }
 
         return "위험 수준의 자외선 지수입니다! 외출을 최대한 자제하시고 피부 보호에 신경 쓰세요.";
+    }
+
+    @Transactional
+    public void createEggDanger(OutingSession outingSession) {
+        notificationRepository.save(Notification.createEggDanger(
+                outingSession.getUser(),
+                outingSession
+        ));
     }
 }
