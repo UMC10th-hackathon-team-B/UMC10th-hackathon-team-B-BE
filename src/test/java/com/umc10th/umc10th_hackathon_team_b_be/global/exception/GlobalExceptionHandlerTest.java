@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,6 +59,27 @@ class GlobalExceptionHandlerTest {
 	}
 
 	@Test
+	void missingRequestParameterReturnsBadRequestResponse() throws Exception {
+		mockMvc.perform(get("/test/query"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.code").value("COMMON_400"))
+				.andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+				.andExpect(jsonPath("$.data").doesNotExist());
+	}
+
+	@Test
+	void invalidRequestParameterTypeReturnsBadRequestResponse() throws Exception {
+		mockMvc.perform(get("/test/query")
+						.param("latitude", "invalid"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.code").value("COMMON_400"))
+				.andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+				.andExpect(jsonPath("$.data").doesNotExist());
+	}
+
+	@Test
 	void unknownExceptionReturnsInternalServerErrorResponse() throws Exception {
 		mockMvc.perform(get("/test/runtime"))
 				.andExpect(status().isInternalServerError())
@@ -78,6 +100,10 @@ class GlobalExceptionHandlerTest {
 
 		@PostMapping("/validation")
 		void validation(@Valid @RequestBody TestRequest request) {
+		}
+
+		@GetMapping("/query")
+		void query(@RequestParam double latitude) {
 		}
 
 		@GetMapping("/runtime")

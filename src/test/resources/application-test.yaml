@@ -1,0 +1,5 @@
+external:
+  vworld:
+    api-key: test-vworld-api-key
+  open-weather:
+    api-key: test-openweather-api-key

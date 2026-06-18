@@ -48,6 +48,10 @@ public class User {
     @Column(name = "last_uv_notified_date")
     private LocalDate lastUvNotifiedDate;
 
+    public void markUvNotified(LocalDate notifiedDate) {
+        this.lastUvNotifiedDate = notifiedDate;
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

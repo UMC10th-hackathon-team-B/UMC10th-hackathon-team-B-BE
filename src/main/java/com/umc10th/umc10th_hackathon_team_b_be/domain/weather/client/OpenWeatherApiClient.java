@@ -3,10 +3,13 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.weather.client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.external.OpenWeatherResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.external.OpenWeatherResult;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.enums.WeatherType;
+import com.umc10th.umc10th_hackathon_team_b_be.global.exception.BusinessException;
+import com.umc10th.umc10th_hackathon_team_b_be.global.exception.ErrorCode;
 
 @Component
 public class OpenWeatherApiClient {
@@ -26,21 +29,27 @@ public class OpenWeatherApiClient {
     }
 
     public OpenWeatherResult getCurrentWeather(double latitude, double longitude) {
-        OpenWeatherResponse response = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/data/3.0/onecall")
-                        .queryParam("lat", latitude)
-                        .queryParam("lon", longitude)
-                        .queryParam("appid", apiKey)
-                        .queryParam("units", "metric")
-                        .queryParam("lang", "kr")
-                        .queryParam("exclude", "minutely,hourly,daily,alerts")
-                        .build())
-                .retrieve()
-                .body(OpenWeatherResponse.class);
+        OpenWeatherResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/data/3.0/onecall")
+                            .queryParam("lat", latitude)
+                            .queryParam("lon", longitude)
+                            .queryParam("appid", apiKey)
+                            .queryParam("units", "metric")
+                            .queryParam("lang", "kr")
+                            .queryParam("exclude", "minutely,hourly,daily,alerts")
+                            .build())
+                    .retrieve()
+                    .body(OpenWeatherResponse.class);
+        } catch (RestClientException exception) {
+            throw new BusinessException(ErrorCode.WEATHER_502);
+        }
 
         if (response == null || response.current() == null) {
-            return createDefaultResult();
+            throw new BusinessException(ErrorCode.WEATHER_502);
         }
 
         OpenWeatherResponse.Current current = response.current();
@@ -91,7 +100,7 @@ public class OpenWeatherApiClient {
 
     private String resolveWeatherLabel(WeatherType weatherType) {
         return switch (weatherType) {
-            case THUNDERSTORM -> "천둥번개";
+            case THUNDERSTORM -> "뇌우";
             case DRIZZLE -> "이슬비";
             case RAIN -> "비";
             case SNOW -> "눈";
@@ -100,21 +109,12 @@ public class OpenWeatherApiClient {
             case HAZE -> "실안개";
             case DUST -> "먼지";
             case FOG -> "안개";
-            case SAND -> "모래";
+            case SAND -> "모래먼지";
             case ASH -> "화산재";
             case SQUALL -> "돌풍";
             case TORNADO -> "토네이도";
             case CLEAR -> "맑음";
-            case CLOUDS -> "흐림";
+            case CLOUDS -> "구름";
         };
-    }
-
-    private OpenWeatherResult createDefaultResult() {
-        return new OpenWeatherResult(
-                WeatherType.CLEAR,
-                "맑음",
-                24.6,
-                7.2
-        );
     }
 }

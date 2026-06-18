@@ -1,6 +1,7 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.weather.service;
 
 import java.time.LocalTime;
+import java.time.Clock;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.client.VWorldGeocoderClient;
 import org.springframework.stereotype.Service;
@@ -29,8 +30,9 @@ public class WeatherObservationService {
     private final NotificationService notificationService;
     private final VWorldGeocoderClient vWorldGeocoderClient;
     private final OpenWeatherApiClient openWeatherApiClient;
+    private final Clock clock;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public WeatherObservationResponse getWeatherObservation(Long userId, double latitude, double longitude) {
         String locationName = vWorldGeocoderClient.getLocationName(latitude, longitude);
 
@@ -57,6 +59,8 @@ public class WeatherObservationService {
 
         OutingStartResponse outingStart = createOutingStartResponse();
 
+        notificationService.createDailyUvIfNeeded(userId, uvIndex);
+
         WeatherNotificationResponse notification = new WeatherNotificationResponse(
                 notificationService.getUnreadCount(userId)
         );
@@ -70,7 +74,7 @@ public class WeatherObservationService {
     }
 
     private OutingStartResponse createOutingStartResponse() {
-        LocalTime now = LocalTime.now();
+        LocalTime now = LocalTime.now(clock);
 
         boolean canStart = !now.isBefore(OUTING_START_TIME)
                 && now.isBefore(OUTING_END_TIME);
@@ -81,7 +85,7 @@ public class WeatherObservationService {
 
         return new OutingStartResponse(
                 false,
-                "현재 시간에는 외출 모드를 시작할 수 없어요."
+                "저녁 8시 이후에는 외출 모드를 시작할 수 없어요."
         );
     }
 
