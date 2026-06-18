@@ -78,4 +78,14 @@ public class Notification {
 
     @Column(name = "read_at")
     private LocalDateTime readAt;
+
+    public static Notification createDailyUv(User user, String title, String content) {
+        Notification notification = new Notification();
+        notification.user = user;
+        notification.type = NotificationType.DAILY_UV;
+        notification.title = title;
+        notification.content = content;
+        notification.isRead = false;
+        return notification;
+    }
 }
