@@ -67,4 +67,8 @@ public class RefreshToken {
         this.tokenHash = tokenHash;
         this.expiresAt = expiresAt;
     }
+
+    public void revoke(LocalDateTime revokedAt) {
+        this.revokedAt = revokedAt;
+    }
 }

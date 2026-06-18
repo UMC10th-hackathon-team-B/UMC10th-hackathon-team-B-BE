@@ -37,7 +37,7 @@ public class AuthTokenIssueService {
                 .build();
     }
 
-    private String hashToken(String token) {
+    public String hashToken(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashed = digest.digest(token.getBytes(StandardCharsets.UTF_8));

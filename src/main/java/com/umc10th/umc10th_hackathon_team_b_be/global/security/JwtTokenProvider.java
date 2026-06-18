@@ -44,6 +44,20 @@ public class JwtTokenProvider {
         return TOKEN_TYPE;
     }
 
+    public Long extractUserId(String token) {
+        Object userIdClaim = Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get(USER_ID_CLAIM);
+
+        if (userIdClaim instanceof Number numberClaim) {
+            return numberClaim.longValue();
+        }
+        return Long.parseLong(String.valueOf(userIdClaim));
+    }
+
     private IssuedToken generateToken(Long userId, long expiresInSeconds) {
         Date issuedAt = new Date();
         Date expiresAtDate = new Date(issuedAt.getTime() + expiresInSeconds * 1000L);

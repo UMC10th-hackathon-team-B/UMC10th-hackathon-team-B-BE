@@ -2,6 +2,8 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.auth.controller.docs;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionResponse;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueRequest;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,5 +15,8 @@ public interface AuthControllerDocs {
 
     @Operation(summary = "카카오 로그인 및 가입 여부 분기", description = "카카오 액세스 토큰을 전달받아 사용자 식별 후, 기존 회원이면 토큰 발급(HOME), 신규 유저면 가입 대기(TERMS) 상태로 분기합니다.")
     ResponseEntity<ApiResponse<AuthSessionResponse>> createAuthSession(AuthSessionRequest request);
+
+    @Operation(summary = "Access Token 재발급", description = "refresh token을 검증하고 access/refresh token을 재발급합니다.")
+    ResponseEntity<ApiResponse<AuthTokenReissueResponse>> reissueAuthToken(AuthTokenReissueRequest request);
 
 }
