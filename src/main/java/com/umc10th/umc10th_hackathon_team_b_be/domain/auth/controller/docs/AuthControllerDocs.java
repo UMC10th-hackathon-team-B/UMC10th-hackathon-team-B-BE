@@ -2,6 +2,7 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.auth.controller.docs;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionResponse;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthLogoutRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
@@ -18,5 +19,8 @@ public interface AuthControllerDocs {
 
     @Operation(summary = "Access Token 재발급", description = "refresh token을 검증하고 access/refresh token을 재발급합니다.")
     ResponseEntity<ApiResponse<AuthTokenReissueResponse>> reissueAuthToken(AuthTokenReissueRequest request);
+
+    @Operation(summary = "로그아웃", description = "refresh token을 검증하고 무효화합니다.")
+    ResponseEntity<ApiResponse<Void>> logout(AuthLogoutRequest request);
 
 }

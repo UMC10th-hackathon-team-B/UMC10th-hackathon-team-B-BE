@@ -1,6 +1,7 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.auth.controller;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.controller.docs.AuthControllerDocs;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthLogoutRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueRequest;
@@ -11,6 +12,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,5 +42,12 @@ public class AuthController implements AuthControllerDocs {
             @Valid @RequestBody AuthTokenReissueRequest request) {
         AuthTokenReissueResponse response = authService.reissueAuthTokens(request);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Override
+    @DeleteMapping("/auth-sessions/current")
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody AuthLogoutRequest request) {
+        authService.logout(request);
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }

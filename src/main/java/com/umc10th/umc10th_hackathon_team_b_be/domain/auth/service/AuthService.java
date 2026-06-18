@@ -1,5 +1,6 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service;
 
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthLogoutRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueRequest;
@@ -94,7 +95,27 @@ public class AuthService {
 
     @Transactional
     public AuthTokenReissueResponse reissueAuthTokens(AuthTokenReissueRequest request) {
-        String refreshToken = request.getRefreshToken();
+        RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken());
+        savedRefreshToken.revoke(LocalDateTime.now());
+
+        IssuedAuthTokens issuedAuthTokens = authTokenIssueService.issueTokens(savedRefreshToken.getUser());
+
+        return AuthTokenReissueResponse.builder()
+                .tokenType(issuedAuthTokens.getTokenType())
+                .accessToken(issuedAuthTokens.getAccessToken())
+                .accessTokenExpiresInSeconds(issuedAuthTokens.getAccessTokenExpiresInSeconds())
+                .refreshToken(issuedAuthTokens.getRefreshToken())
+                .refreshTokenExpiresAt(issuedAuthTokens.getRefreshTokenExpiresAt())
+                .build();
+    }
+
+    @Transactional
+    public void logout(AuthLogoutRequest request) {
+        RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken());
+        savedRefreshToken.revoke(LocalDateTime.now());
+    }
+
+    private RefreshToken validateRefreshToken(String refreshToken) {
         Long userId = extractUserIdFromRefreshToken(refreshToken);
         String refreshTokenHash = authTokenIssueService.hashToken(refreshToken);
 
@@ -109,17 +130,7 @@ public class AuthService {
             throw new BusinessException(ErrorCode.AUTH_401);
         }
 
-        savedRefreshToken.revoke(LocalDateTime.now());
-
-        IssuedAuthTokens issuedAuthTokens = authTokenIssueService.issueTokens(savedRefreshToken.getUser());
-
-        return AuthTokenReissueResponse.builder()
-                .tokenType(issuedAuthTokens.getTokenType())
-                .accessToken(issuedAuthTokens.getAccessToken())
-                .accessTokenExpiresInSeconds(issuedAuthTokens.getAccessTokenExpiresInSeconds())
-                .refreshToken(issuedAuthTokens.getRefreshToken())
-                .refreshTokenExpiresAt(issuedAuthTokens.getRefreshTokenExpiresAt())
-                .build();
+        return savedRefreshToken;
     }
 
     private Long extractUserIdFromRefreshToken(String refreshToken) {
