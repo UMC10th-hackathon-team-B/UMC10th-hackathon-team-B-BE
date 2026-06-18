@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,7 +21,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@WebMvcTest(controllers = GlobalExceptionHandlerTest.TestController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import({
 		GlobalExceptionHandler.class,
 		GlobalExceptionHandlerTest.TestController.class
@@ -28,6 +31,9 @@ class GlobalExceptionHandlerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@MockBean
+	private com.umc10th.umc10th_hackathon_team_b_be.global.security.JwtTokenProvider jwtTokenProvider;
 
 	@Test
 	void businessExceptionReturnsErrorCodeResponse() throws Exception {
