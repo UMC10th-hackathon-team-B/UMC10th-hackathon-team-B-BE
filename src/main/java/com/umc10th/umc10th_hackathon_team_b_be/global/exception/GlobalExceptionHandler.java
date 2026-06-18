@@ -4,8 +4,10 @@ import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -27,6 +29,19 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
 			MethodArgumentNotValidException exception
 	) {
+		ErrorCode errorCode = ErrorCode.COMMON_400;
+
+		return ResponseEntity
+				.status(errorCode.getHttpStatus())
+				.body(ApiResponse.failure(errorCode));
+	}
+
+	// 요청 파라미터 누락 및 타입 오류를 공통 400 응답으로 변환
+	@ExceptionHandler({
+			MissingServletRequestParameterException.class,
+			MethodArgumentTypeMismatchException.class
+	})
+	public ResponseEntity<ApiResponse<Void>> handleRequestParameterException(Exception exception) {
 		ErrorCode errorCode = ErrorCode.COMMON_400;
 
 		return ResponseEntity
