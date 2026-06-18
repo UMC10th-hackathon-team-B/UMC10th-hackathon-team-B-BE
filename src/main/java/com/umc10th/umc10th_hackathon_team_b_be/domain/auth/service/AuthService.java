@@ -20,9 +20,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-private final KakaoApiClient kakaoApiClient;
-private final UserRepository userRepository;
+    private final KakaoApiClient kakaoApiClient;
+    private final UserRepository userRepository;
     private final AuthTokenIssueService authTokenIssueService;
+    private final SignupTokenService signupTokenService;
 
     @Transactional
     public AuthSessionResponse processKakaoLogin(AuthSessionRequest request) {
@@ -73,13 +74,12 @@ private final UserRepository userRepository;
     }
 
     private AuthSessionResponse handleNewUser(String kakaoId) {
-        // TODO: 약관 동의 시 검증할 수 있도록 임시 signupToken을 레디스나 DB에 저장하는 로직 필요
-        String mockSignupToken = "mock-signup-token-" + kakaoId;
+        SignupTokenService.IssuedSignupToken issuedSignupToken = signupTokenService.issue(kakaoId);
 
         return AuthSessionResponse.builder()
                 .nextScreen("TERMS")
-                .signupToken(mockSignupToken)
-                .signupTokenExpiresInSeconds(600)
+                .signupToken(issuedSignupToken.getToken())
+                .signupTokenExpiresInSeconds(issuedSignupToken.getExpiresInSeconds())
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.user.service;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.IssuedAuthTokens;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.AuthTokenIssueService;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.SignupTokenService;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.dto.UserSignupRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.dto.UserSignupResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
@@ -17,13 +18,11 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private static final String SIGNUP_TOKEN_PREFIX = "mock-signup-token-";
     private static final Set<TermType> REQUIRED_TERM_TYPES = EnumSet.of(
             TermType.SERVICE,
             TermType.PRIVACY,
@@ -33,10 +32,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserTermAgreementRepository userTermAgreementRepository;
     private final AuthTokenIssueService authTokenIssueService;
+    private final SignupTokenService signupTokenService;
 
     @Transactional
     public UserSignupResponse signup(UserSignupRequest request) {
-        String kakaoId = extractKakaoIdFromSignupToken(request.getSignupToken());
+        String kakaoId = signupTokenService.extractKakaoId(request.getSignupToken());
         validateRequiredTerms(request.getAgreedTermTypes());
         validateUserNotExists(kakaoId);
 
@@ -72,16 +72,6 @@ public class UserService {
         if (userRepository.existsByKakaoId(kakaoId)) {
             throw new BusinessException(ErrorCode.AUTH_400);
         }
-    }
-
-    private String extractKakaoIdFromSignupToken(String signupToken) {
-        if (!StringUtils.hasText(signupToken)
-                || !signupToken.startsWith(SIGNUP_TOKEN_PREFIX)
-                || signupToken.length() <= SIGNUP_TOKEN_PREFIX.length()) {
-            throw new BusinessException(ErrorCode.AUTH_400);
-        }
-
-        return signupToken.substring(SIGNUP_TOKEN_PREFIX.length());
     }
 
     private void validateRequiredTerms(List<TermType> agreedTermTypes) {
