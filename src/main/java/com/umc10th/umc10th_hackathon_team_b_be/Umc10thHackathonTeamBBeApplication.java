@@ -2,7 +2,9 @@ package com.umc10th.umc10th_hackathon_team_b_be;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
+@EnableFeignClients
 @SpringBootApplication
 public class Umc10thHackathonTeamBBeApplication {
 
