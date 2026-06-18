@@ -79,13 +79,38 @@ public class Notification {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    private Notification(
+            User user,
+            OutingSession outingSession,
+            NotificationType type,
+            String title,
+            String content
+    ) {
+        this.user = user;
+        this.outingSession = outingSession;
+        this.type = type;
+        this.title = title;
+        this.content = content;
+        this.isRead = false;
+    }
+
     public static Notification createDailyUv(User user, String title, String content) {
-        Notification notification = new Notification();
-        notification.user = user;
-        notification.type = NotificationType.DAILY_UV;
-        notification.title = title;
-        notification.content = content;
-        notification.isRead = false;
-        return notification;
+        return new Notification(
+                user,
+                null,
+                NotificationType.DAILY_UV,
+                title,
+                content
+        );
+    }
+
+    public static Notification createEggDanger(User user, OutingSession outingSession) {
+        return new Notification(
+                user,
+                outingSession,
+                NotificationType.EGG_DANGER,
+                "자외선 차단제를 발라주세요!",
+                "계란이가 많이 익었어요. 자외선 노출에 주의해주세요."
+        );
     }
 }

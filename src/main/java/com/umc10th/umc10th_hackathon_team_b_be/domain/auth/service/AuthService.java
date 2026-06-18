@@ -9,6 +9,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.IssuedAuthTokens;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.KakaoUserInfoResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.entity.RefreshToken;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.repository.RefreshTokenRepository;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.service.OutingService;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserRepository;
 
@@ -34,6 +35,7 @@ public class AuthService {
     private final AuthTokenIssueService authTokenIssueService;
     private final SignupTokenService signupTokenService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final OutingService outingService;
 
     @Transactional
     public AuthSessionResponse processKakaoLogin(AuthSessionRequest request) {
@@ -112,6 +114,7 @@ public class AuthService {
     @Transactional
     public void logout(AuthLogoutRequest request, Long userId) {
         RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken(), userId);
+        outingService.completeCurrentSessionForLogout(userId);
         savedRefreshToken.revoke(LocalDateTime.now());
     }
 
