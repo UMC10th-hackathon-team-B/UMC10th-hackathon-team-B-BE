@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 카카오 ID로 가입된 유저 찾기
     Optional<User> findByKakaoId(String kakaoId);
+
+    boolean existsByKakaoId(String kakaoId);
 }
