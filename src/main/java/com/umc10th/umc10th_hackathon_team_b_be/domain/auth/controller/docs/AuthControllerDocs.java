@@ -31,7 +31,7 @@ public interface AuthControllerDocs {
 
     @Operation(
             summary = "로그아웃",
-            description = "refresh token을 검증하고 무효화합니다.",
+            description = "refresh token을 검증하고 무효화합니다. 진행 중인 외출 세션이 있으면 autoEndAt 경과 여부에 따라 AUTO 또는 LOGOUT으로 종료 처리합니다.",
             operationId = "logout"
     )
     ResponseEntity<ApiResponse<Void>> logout(AuthLogoutRequest request, @Parameter(hidden = true) Long userId);
