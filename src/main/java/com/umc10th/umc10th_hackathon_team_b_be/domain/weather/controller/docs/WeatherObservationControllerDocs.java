@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherObservationResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerSuccessExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +27,15 @@ public interface WeatherObservationControllerDocs {
             operationId = "getWeatherObservation"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "홈 화면에 필요한 날씨/자외선/계란/알림 요약 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "홈 화면에 필요한 날씨/자외선/계란/알림 요약 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "WEATHER_OBSERVATION", value = SwaggerSuccessExamples.WEATHER_OBSERVATION)
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
                     description = "위도 또는 경도 요청값이 잘못된 경우",

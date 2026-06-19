@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.applaunch.dto.AppLaunchRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.dto.OutingFlowResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerSuccessExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +26,19 @@ public interface AppLaunchControllerDocs {
             operationId = "launch"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "홈/외출 화면 진입 데이터 또는 자동 종료 결과 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "홈/외출 화면 진입 데이터 또는 자동 종료 결과 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "HOME", value = SwaggerSuccessExamples.OUTING_FLOW_HOME),
+                                    @ExampleObject(name = "OUTING", value = SwaggerSuccessExamples.OUTING_FLOW_OUTING),
+                                    @ExampleObject(name = "AUTO_ENDED", value = SwaggerSuccessExamples.OUTING_FLOW_AUTO_ENDED)
+                            }
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
                     description = "앱 재실행 요청값이 잘못된 경우",

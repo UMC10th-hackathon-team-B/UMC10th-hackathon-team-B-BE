@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.NotificationListResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.NotificationReadRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerSuccessExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +30,18 @@ public interface NotificationControllerDocs {
             operationId = "getNotifications"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "읽지 않은 알림 목록과 unreadCount 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "읽지 않은 알림 목록과 unreadCount 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "NOTIFICATION_LIST", value = SwaggerSuccessExamples.NOTIFICATION_LIST),
+                                    @ExampleObject(name = "NOTIFICATION_EMPTY", value = SwaggerSuccessExamples.NOTIFICATION_EMPTY)
+                            }
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "401",
                     description = "Access Token이 없거나 유효하지 않은 경우",
@@ -50,7 +62,18 @@ public interface NotificationControllerDocs {
             operationId = "readNotification"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "읽음 처리 성공 및 갱신된 알림 목록 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "읽음 처리 성공 및 갱신된 알림 목록 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "NOTIFICATION_READ", value = SwaggerSuccessExamples.NOTIFICATION_READ),
+                                    @ExampleObject(name = "NOTIFICATION_EMPTY", value = SwaggerSuccessExamples.NOTIFICATION_EMPTY)
+                            }
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
                     description = "알림 읽음 처리 요청값이 잘못된 경우",
