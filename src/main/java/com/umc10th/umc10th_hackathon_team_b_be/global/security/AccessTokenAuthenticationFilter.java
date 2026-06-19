@@ -64,7 +64,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
 
         String accessToken = authorizationHeader.substring(BEARER_PREFIX.length());
         try {
-            Long userId = jwtTokenProvider.extractUserId(accessToken);
+            Long userId = jwtTokenProvider.extractAccessTokenUserId(accessToken);
             request.setAttribute(AUTHENTICATED_USER_ID_ATTRIBUTE, userId);
         } catch (JwtException | IllegalArgumentException e) {
             writeUnauthorizedResponse(response);

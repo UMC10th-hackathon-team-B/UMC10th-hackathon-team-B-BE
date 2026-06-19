@@ -296,8 +296,8 @@ class OutingAppLaunchIntegrationTest {
         User autoUser = createUser();
         setNow(LocalDateTime.of(2026, 6, 18, 19, 0));
         Long autoSessionId = createSession(autoUser, "NONE");
-        IssuedAuthTokens autoTokens = authTokenIssueService.issueTokens(autoUser);
         setNow(LocalDateTime.of(2026, 6, 18, 20, 10));
+        IssuedAuthTokens autoTokens = authTokenIssueService.issueTokens(autoUser);
 
         mockMvc.perform(delete("/api/v1/auth-sessions/current")
                         .header("Authorization", "Bearer " + autoTokens.getAccessToken())

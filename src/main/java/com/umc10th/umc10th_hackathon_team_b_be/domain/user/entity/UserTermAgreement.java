@@ -64,9 +64,9 @@ public class UserTermAgreement {
 
     // 약관 동의 저장을 위한 빌더 추가
     @Builder
-    public UserTermAgreement(User user, TermType termType) {
+    public UserTermAgreement(User user, TermType termType, LocalDateTime agreedAt) {
         this.user = user;
         this.termType = termType;
-        this.agreedAt = java.time.LocalDateTime.now(); // 동의 시점 현재 시간
+        this.agreedAt = agreedAt;
     }
 }

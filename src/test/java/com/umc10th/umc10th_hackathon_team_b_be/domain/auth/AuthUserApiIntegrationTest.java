@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,6 +62,9 @@ class AuthUserApiIntegrationTest {
                 case "kakao-token-user-4" -> 1004L;
                 case "kakao-token-user-5" -> 1005L;
                 case "kakao-token-user-6" -> 1006L;
+                case "kakao-token-user-7" -> 1007L;
+                case "kakao-token-user-8" -> 1008L;
+                case "kakao-token-user-9" -> 1009L;
                 default -> 9999L;
             };
             return kakaoUserInfo(kakaoId);
@@ -164,6 +168,7 @@ class AuthUserApiIntegrationTest {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         String expiredToken = Jwts.builder()
                 .claim("userId", 12345L)
+                .claim("tokenPurpose", "REFRESH")
                 .issuedAt(java.util.Date.from(Instant.now().minusSeconds(3600)))
                 .expiration(java.util.Date.from(Instant.now().minusSeconds(1800)))
                 .signWith(key)
@@ -196,6 +201,59 @@ class AuthUserApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value("AUTH_401"));
     }
 
+    @Test
+    void accessTokenCanAccessProtectedApi() throws Exception {
+        Map<String, String> tokens = signupAndGetTokens("kakao-token-user-7");
+
+        mockMvc.perform(get("/api/v1/notifications")
+                        .header("Authorization", "Bearer " + tokens.get("accessToken")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void refreshTokenCannotAccessProtectedApi() throws Exception {
+        Map<String, String> tokens = signupAndGetTokens("kakao-token-user-8");
+
+        mockMvc.perform(get("/api/v1/notifications")
+                        .header("Authorization", "Bearer " + tokens.get("refreshToken")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("AUTH_401"));
+    }
+
+    @Test
+    void accessTokenCannotReissueAuthTokens() throws Exception {
+        Map<String, String> tokens = signupAndGetTokens("kakao-token-user-9");
+
+        mockMvc.perform(post("/api/v1/auth-tokens")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("refreshToken", tokens.get("accessToken")))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("AUTH_401"));
+    }
+
+    @Test
+    void legacyTokenWithoutPurposeReturnsAuth401() throws Exception {
+        String legacyToken = legacyTokenWithoutPurpose(12345L);
+
+        mockMvc.perform(post("/api/v1/auth-tokens")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("refreshToken", legacyToken))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("AUTH_401"));
+    }
+    private String legacyTokenWithoutPurpose(Long userId) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        return Jwts.builder()
+                .claim("userId", userId)
+                .issuedAt(java.util.Date.from(Instant.now()))
+                .expiration(java.util.Date.from(Instant.now().plusSeconds(1800)))
+                .signWith(key)
+                .compact();
+    }
     private Map<String, String> signupAndGetTokens(String kakaoAccessToken) throws Exception {
         Map<String, Object> loginData = login(kakaoAccessToken);
         String signupToken = String.valueOf(loginData.get("signupToken"));

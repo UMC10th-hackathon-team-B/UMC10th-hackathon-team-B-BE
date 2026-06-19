@@ -18,6 +18,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.global.exception.ErrorCode;
 import com.umc10th.umc10th_hackathon_team_b_be.global.security.JwtTokenProvider;
 import feign.FeignException;
 import io.jsonwebtoken.JwtException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class AuthService {
     private final SignupTokenService signupTokenService;
     private final JwtTokenProvider jwtTokenProvider;
     private final OutingService outingService;
+    private final Clock clock;
 
     @Transactional
     public AuthSessionResponse processKakaoLogin(AuthSessionRequest request) {
@@ -98,7 +100,7 @@ public class AuthService {
     @Transactional
     public AuthTokenReissueResponse reissueAuthTokens(AuthTokenReissueRequest request) {
         RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken(), null);
-        savedRefreshToken.revoke(LocalDateTime.now());
+        savedRefreshToken.revoke(LocalDateTime.now(clock));
 
         IssuedAuthTokens issuedAuthTokens = authTokenIssueService.issueTokens(savedRefreshToken.getUser());
 
@@ -115,7 +117,7 @@ public class AuthService {
     public void logout(AuthLogoutRequest request, Long userId) {
         RefreshToken savedRefreshToken = validateRefreshToken(request.getRefreshToken(), userId);
         outingService.completeCurrentSessionForLogout(userId);
-        savedRefreshToken.revoke(LocalDateTime.now());
+        savedRefreshToken.revoke(LocalDateTime.now(clock));
     }
 
     private RefreshToken validateRefreshToken(String refreshToken, Long expectedUserId) {
@@ -125,7 +127,7 @@ public class AuthService {
         RefreshToken savedRefreshToken = refreshTokenRepository.findByTokenHashAndRevokedAtIsNull(refreshTokenHash)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_401));
 
-        if (savedRefreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (savedRefreshToken.getExpiresAt().isBefore(LocalDateTime.now(clock))) {
             throw new BusinessException(ErrorCode.AUTH_401);
         }
 
@@ -142,7 +144,7 @@ public class AuthService {
 
     private Long extractUserIdFromRefreshToken(String refreshToken) {
         try {
-            return jwtTokenProvider.extractUserId(refreshToken);
+            return jwtTokenProvider.extractRefreshTokenUserId(refreshToken);
         } catch (JwtException | IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.AUTH_401);
         }
