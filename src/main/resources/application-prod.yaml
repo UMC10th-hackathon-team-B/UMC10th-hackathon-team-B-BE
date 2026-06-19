@@ -12,3 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: false
+
+app:
+  openapi:
+    server-url: ${OPENAPI_SERVER_URL:https://api.warnning-egg.r-e.kr}
