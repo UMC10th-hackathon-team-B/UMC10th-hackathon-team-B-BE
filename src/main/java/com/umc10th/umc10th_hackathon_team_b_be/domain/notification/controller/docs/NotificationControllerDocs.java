@@ -2,15 +2,20 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.notification.controller.d
 
 import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
 import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.NotificationListResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.NotificationReadRequest;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,7 +30,15 @@ public interface NotificationControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "읽지 않은 알림 목록과 unreadCount 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<NotificationListResponse>> getNotifications(
             @Parameter(hidden = true) @CurrentUserId Long userId
@@ -38,8 +51,33 @@ public interface NotificationControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "읽음 처리 성공 및 갱신된 알림 목록 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "알림이 없거나 현재 사용자 소유 알림이 아닌 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "알림 읽음 처리 요청값이 잘못된 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "COMMON_400", value = SwaggerErrorExamples.COMMON_400)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "알림이 없거나 현재 사용자 소유 알림이 아닌 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "NOTIFICATION_404", value = SwaggerErrorExamples.NOTIFICATION_404)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<NotificationListResponse>> readNotification(
             @Parameter(hidden = true) @CurrentUserId Long userId,

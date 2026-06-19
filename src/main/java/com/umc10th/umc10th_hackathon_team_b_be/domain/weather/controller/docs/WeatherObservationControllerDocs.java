@@ -2,13 +2,18 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.weather.controller.docs;
 
 import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
 import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherObservationResponse;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -22,8 +27,33 @@ public interface WeatherObservationControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "홈 화면에 필요한 날씨/자외선/계란/알림 요약 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "날씨 또는 위치 외부 API 조회에 실패한 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "위도 또는 경도 요청값이 잘못된 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "COMMON_400", value = SwaggerErrorExamples.COMMON_400)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "502",
+                    description = "날씨 또는 위치 외부 API 조회에 실패한 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "WEATHER_502", value = SwaggerErrorExamples.WEATHER_502)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<WeatherObservationResponse>> getWeatherObservation(
             @Parameter(hidden = true) @CurrentUserId Long userId,

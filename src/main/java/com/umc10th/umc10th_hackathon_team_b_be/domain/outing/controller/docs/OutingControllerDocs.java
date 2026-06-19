@@ -1,5 +1,6 @@
 package com.umc10th.umc10th_hackathon_team_b_be.domain.outing.controller.docs;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.dto.LocationRequest;
@@ -7,10 +8,14 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.dto.OutingFlowRespo
 import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.dto.OutingSessionCreateRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.dto.OutingSessionEndRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.dto.SunscreenApplicationRequest;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
@@ -25,10 +30,45 @@ public interface OutingControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "외출 세션 생성 성공 및 외출 화면 데이터 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "외출 시작 제한 시간 또는 잘못된 요청값"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 진행 중인 외출 세션이 있는 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "날씨 또는 위치 외부 API 조회에 실패한 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "외출 시작 제한 시간 또는 잘못된 요청값",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "COMMON_400", value = SwaggerErrorExamples.COMMON_400),
+                                    @ExampleObject(name = "OUTING_400", value = SwaggerErrorExamples.OUTING_400)
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "409",
+                    description = "이미 진행 중인 외출 세션이 있는 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "OUTING_409", value = SwaggerErrorExamples.OUTING_409)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "502",
+                    description = "날씨 또는 위치 외부 API 조회에 실패한 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "WEATHER_502", value = SwaggerErrorExamples.WEATHER_502)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<OutingFlowResponse>> createOutingSession(
             @Parameter(hidden = true) Long userId,
@@ -46,9 +86,42 @@ public interface OutingControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "외출 화면 데이터 또는 자동 종료 결과 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "진행 중인 외출 세션이 없는 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "날씨 또는 위치 외부 API 조회에 실패한 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "위도 또는 경도 요청값이 잘못된 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "COMMON_400", value = SwaggerErrorExamples.COMMON_400)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "진행 중인 외출 세션이 없는 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "OUTING_404", value = SwaggerErrorExamples.OUTING_404)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "502",
+                    description = "날씨 또는 위치 외부 API 조회에 실패한 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "WEATHER_502", value = SwaggerErrorExamples.WEATHER_502)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<OutingFlowResponse>> getCurrentOutingSession(
             @Parameter(hidden = true) Long userId,
@@ -62,9 +135,42 @@ public interface OutingControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "차단제 기록 성공 및 재계산된 외출 화면 데이터 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "진행 중인 외출 세션이 없는 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "날씨 또는 위치 외부 API 조회에 실패한 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "차단제 기록 요청값이 잘못된 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "COMMON_400", value = SwaggerErrorExamples.COMMON_400)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "진행 중인 외출 세션이 없는 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "OUTING_404", value = SwaggerErrorExamples.OUTING_404)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "502",
+                    description = "날씨 또는 위치 외부 API 조회에 실패한 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "WEATHER_502", value = SwaggerErrorExamples.WEATHER_502)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<OutingFlowResponse>> applySunscreen(
             @Parameter(hidden = true) Long userId,
@@ -82,10 +188,45 @@ public interface OutingControllerDocs {
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "수동 종료 결과 또는 자동 종료 결과 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 종료 상태 요청"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Access Token이 없거나 유효하지 않은 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "종료할 외출 세션이 없거나 사용자 소유가 아닌 경우"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "날씨 또는 위치 외부 API 조회에 실패한 경우")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 종료 상태 요청 또는 잘못된 요청값",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "COMMON_400", value = SwaggerErrorExamples.COMMON_400),
+                                    @ExampleObject(name = "OUTING_400", value = SwaggerErrorExamples.OUTING_400)
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Access Token이 없거나 유효하지 않은 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_401", value = SwaggerErrorExamples.AUTH_401)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "종료할 외출 세션이 없거나 사용자 소유가 아닌 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "OUTING_404", value = SwaggerErrorExamples.OUTING_404)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "502",
+                    description = "날씨 또는 위치 외부 API 조회에 실패한 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "WEATHER_502", value = SwaggerErrorExamples.WEATHER_502)
+                    )
+            )
     })
     ResponseEntity<ApiResponse<OutingFlowResponse>> completeOutingSession(
             @Parameter(hidden = true) Long userId,
