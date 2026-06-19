@@ -111,11 +111,11 @@ public class NotificationService {
         }
 
         if (uvIndex <= 5) {
-            return "현재 자외선 지수는 보통이에요. 장시간 외출 시에는 자외선 차단제를 발라주세요.";
+            return "장시간 외출 시에는 자외선 차단제를 발라주세요.";
         }
 
         if (uvIndex <= 7) {
-            return "현재 자외선 지수가 높아요! 외출 시 모자나 선글라스를 챙기고, 차단제를 꼼꼼히 바르세요.";
+            return "외출 시 모자나 선글라스를 챙기고, 차단제를 꼼꼼히 바르세요.";
         }
 
         if (uvIndex <= 10) {
