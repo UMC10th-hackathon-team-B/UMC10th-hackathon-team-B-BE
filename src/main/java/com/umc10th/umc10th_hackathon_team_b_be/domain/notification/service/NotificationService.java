@@ -10,6 +10,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserRepository;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.BusinessException;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.ErrorCode;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class NotificationService {
 
     private static final LocalTime DAILY_UV_START_TIME = LocalTime.of(6, 0);
     private static final LocalTime DAILY_UV_END_TIME = LocalTime.of(18, 0);
+    private static final int MAX_NOTIFICATIONS_PER_USER = 30;
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
@@ -79,6 +81,7 @@ public class NotificationService {
                 resolveDailyUvTitle(uvIndex),
                 resolveDailyUvContent(uvIndex)
         ));
+        enforceRetentionLimit(userId);
         user.markUvNotified(today);
     }
 
@@ -128,5 +131,20 @@ public class NotificationService {
                 outingSession.getUser(),
                 outingSession
         ));
+        enforceRetentionLimit(outingSession.getUser().getId());
+    }
+
+    private void enforceRetentionLimit(Long userId) {
+        long notificationCount = notificationRepository.countByUser_Id(userId);
+        long exceededCount = notificationCount - MAX_NOTIFICATIONS_PER_USER;
+        if (exceededCount <= 0) {
+            return;
+        }
+
+        List<Notification> oldNotifications = notificationRepository.findByUser_IdOrderByCreatedAtAscIdAsc(
+                userId,
+                PageRequest.of(0, Math.toIntExact(exceededCount))
+        );
+        notificationRepository.deleteAllInBatch(oldNotifications);
     }
 }
