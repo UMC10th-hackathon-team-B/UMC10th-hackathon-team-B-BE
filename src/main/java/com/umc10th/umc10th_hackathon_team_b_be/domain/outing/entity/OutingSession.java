@@ -108,4 +108,78 @@ public class OutingSession {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    private OutingSession(
+            User user,
+            BigDecimal startUvIndex,
+            BigDecimal eggScore,
+            EggStatus eggStatus,
+            LocalDateTime lastSunscreenAppliedAt,
+            LocalDateTime calculatedAt,
+            LocalDateTime startedAt,
+            LocalDateTime autoEndAt
+    ) {
+        this.user = user;
+        this.status = OutingSessionStatus.IN_PROGRESS;
+        this.eggStatus = eggStatus;
+        this.eggScore = eggScore;
+        this.startUvIndex = startUvIndex;
+        this.currentUvIndex = startUvIndex;
+        this.lastSunscreenAppliedAt = lastSunscreenAppliedAt;
+        this.lastCalculatedAt = calculatedAt;
+        this.startedAt = startedAt;
+        this.autoEndAt = autoEndAt;
+    }
+
+    public static OutingSession start(
+            User user,
+            BigDecimal startUvIndex,
+            BigDecimal eggScore,
+            EggStatus eggStatus,
+            LocalDateTime lastSunscreenAppliedAt,
+            LocalDateTime startedAt,
+            LocalDateTime autoEndAt
+    ) {
+        return new OutingSession(
+                user,
+                startUvIndex,
+                eggScore,
+                eggStatus,
+                lastSunscreenAppliedAt,
+                startedAt,
+                startedAt,
+                autoEndAt
+        );
+    }
+
+    public void updateEggCalculation(
+            BigDecimal eggScore,
+            EggStatus eggStatus,
+            BigDecimal currentUvIndex,
+            LocalDateTime calculatedAt
+    ) {
+        if (status != OutingSessionStatus.IN_PROGRESS) {
+            return;
+        }
+        this.eggScore = eggScore;
+        this.eggStatus = eggStatus;
+        this.currentUvIndex = currentUvIndex;
+        this.lastCalculatedAt = calculatedAt;
+    }
+
+    public void recordSunscreenApplication(LocalDateTime appliedAt) {
+        if (status != OutingSessionStatus.IN_PROGRESS) {
+            return;
+        }
+        this.lastSunscreenAppliedAt = appliedAt;
+    }
+
+    public void complete(OutingSessionEndReason endReason, LocalDateTime endedAt) {
+        if (status == OutingSessionStatus.COMPLETED) {
+            return;
+        }
+        this.status = OutingSessionStatus.COMPLETED;
+        this.endReason = endReason;
+        this.endedAt = endedAt;
+    }
 }

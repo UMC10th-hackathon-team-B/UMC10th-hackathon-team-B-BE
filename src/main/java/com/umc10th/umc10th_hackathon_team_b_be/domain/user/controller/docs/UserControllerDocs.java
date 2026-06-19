@@ -4,6 +4,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.user.dto.UserSignupRequest
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.dto.UserSignupResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
@@ -15,5 +16,6 @@ public interface UserControllerDocs {
             description = "가입 토큰과 필수 약관 동의 목록을 검증하고 신규 사용자를 생성합니다.",
             operationId = "signup"
     )
+    @SecurityRequirements()
     ResponseEntity<ApiResponse<UserSignupResponse>> signup(UserSignupRequest request);
 }

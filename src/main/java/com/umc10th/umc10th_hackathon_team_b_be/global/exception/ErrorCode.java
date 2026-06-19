@@ -19,6 +19,11 @@ public enum ErrorCode {
 	USER_404(HttpStatus.NOT_FOUND, "USER_404", "사용자를 찾을 수 없습니다."),
 	TERMS_400(HttpStatus.BAD_REQUEST, "TERMS_400", "필수 약관에 모두 동의해야 합니다."),
 
+    // --- Outing 도메인 예외 코드 ---
+    OUTING_400(HttpStatus.BAD_REQUEST, "OUTING_400", "외출 세션을 시작할 수 없습니다."),
+    OUTING_404(HttpStatus.NOT_FOUND, "OUTING_404", "진행 중인 외출 세션이 없습니다."),
+    OUTING_409(HttpStatus.CONFLICT, "OUTING_409", "이미 진행 중인 외출 세션이 있습니다."),
+
     // --- Notification 도메인 예외 코드 ---
     NOTIFICATION_404(HttpStatus.NOT_FOUND, "NOTIFICATION_404", "알림을 찾을 수 없습니다."),
 

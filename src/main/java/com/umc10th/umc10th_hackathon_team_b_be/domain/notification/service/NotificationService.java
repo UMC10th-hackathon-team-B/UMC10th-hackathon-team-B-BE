@@ -10,6 +10,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserRepository;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.BusinessException;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.ErrorCode;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.Notificat
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.dto.NotificationListResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.entity.Notification;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.repository.NotificationRepository;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.outing.entity.OutingSession;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +28,7 @@ public class NotificationService {
 
     private static final LocalTime DAILY_UV_START_TIME = LocalTime.of(6, 0);
     private static final LocalTime DAILY_UV_END_TIME = LocalTime.of(18, 0);
+    private static final int MAX_NOTIFICATIONS_PER_USER = 30;
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
@@ -66,7 +69,7 @@ public class NotificationService {
             return;
         }
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_404));
 
         if (today.equals(user.getLastUvNotifiedDate())) {
@@ -78,6 +81,7 @@ public class NotificationService {
                 resolveDailyUvTitle(uvIndex),
                 resolveDailyUvContent(uvIndex)
         ));
+        enforceRetentionLimit(userId);
         user.markUvNotified(today);
     }
 
@@ -119,5 +123,28 @@ public class NotificationService {
         }
 
         return "위험 수준의 자외선 지수입니다! 외출을 최대한 자제하시고 피부 보호에 신경 쓰세요.";
+    }
+
+    @Transactional
+    public void createEggDanger(OutingSession outingSession) {
+        notificationRepository.save(Notification.createEggDanger(
+                outingSession.getUser(),
+                outingSession
+        ));
+        enforceRetentionLimit(outingSession.getUser().getId());
+    }
+
+    private void enforceRetentionLimit(Long userId) {
+        long notificationCount = notificationRepository.countByUser_Id(userId);
+        long exceededCount = notificationCount - MAX_NOTIFICATIONS_PER_USER;
+        if (exceededCount <= 0) {
+            return;
+        }
+
+        List<Notification> oldNotifications = notificationRepository.findByUser_IdOrderByCreatedAtAscIdAsc(
+                userId,
+                PageRequest.of(0, Math.toIntExact(exceededCount))
+        );
+        notificationRepository.deleteAllInBatch(oldNotifications);
     }
 }
