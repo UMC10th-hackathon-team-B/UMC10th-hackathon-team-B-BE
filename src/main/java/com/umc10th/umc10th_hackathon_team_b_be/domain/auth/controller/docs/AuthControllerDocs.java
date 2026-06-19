@@ -6,6 +6,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRespon
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
+import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerSuccessExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,18 @@ public interface AuthControllerDocs {
             operationId = "createAuthSession"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "기존 가입자는 인증 토큰 반환, 신규 사용자는 가입 토큰 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "기존 가입자는 인증 토큰 반환, 신규 사용자는 가입 토큰 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "HOME", value = SwaggerSuccessExamples.AUTH_SESSION_HOME),
+                                    @ExampleObject(name = "TERMS", value = SwaggerSuccessExamples.AUTH_SESSION_TERMS)
+                            }
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
                     description = "카카오 토큰이 유효하지 않거나 로그인 요청값이 잘못된 경우",
@@ -57,7 +69,15 @@ public interface AuthControllerDocs {
             operationId = "reissueAuthToken"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "재발급된 access/refresh token 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "재발급된 access/refresh token 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "AUTH_TOKEN_REISSUE", value = SwaggerSuccessExamples.AUTH_TOKEN_REISSUE)
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
                     description = "refresh token 요청값이 잘못된 경우",
@@ -92,7 +112,15 @@ public interface AuthControllerDocs {
             operationId = "logout"
     )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공. data는 null"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "로그아웃 성공. data는 null",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "LOGOUT", value = SwaggerSuccessExamples.LOGOUT)
+                    )
+            ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
                     description = "refresh token 요청값이 잘못된 경우",
