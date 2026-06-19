@@ -12,6 +12,8 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserReposi
 import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserTermAgreementRepository;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.BusinessException;
 import com.umc10th.umc10th_hackathon_team_b_be.global.exception.ErrorCode;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +35,7 @@ public class UserService {
     private final UserTermAgreementRepository userTermAgreementRepository;
     private final AuthTokenIssueService authTokenIssueService;
     private final SignupTokenService signupTokenService;
+    private final Clock clock;
 
     @Transactional
     public UserSignupResponse signup(UserSignupRequest request) {
@@ -48,6 +51,7 @@ public class UserService {
                 .map(termType -> UserTermAgreement.builder()
                         .user(user)
                         .termType(termType)
+                        .agreedAt(LocalDateTime.now(clock))
                         .build())
                 .toList();
 

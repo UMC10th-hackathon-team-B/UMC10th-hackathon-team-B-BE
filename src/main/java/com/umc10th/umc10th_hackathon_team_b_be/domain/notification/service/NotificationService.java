@@ -69,7 +69,7 @@ public class NotificationService {
             return;
         }
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_404));
 
         if (today.equals(user.getLastUvNotifiedDate())) {

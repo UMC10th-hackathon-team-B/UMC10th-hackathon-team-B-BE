@@ -61,7 +61,7 @@ class NotificationServiceTest {
                 .kakaoId("kakao-id")
                 .build();
 
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
 
         service.createDailyUvIfNeeded(USER_ID, uvIndex);
 
@@ -97,7 +97,7 @@ class NotificationServiceTest {
                 .build();
         user.markUvNotified(LocalDate.of(2026, 6, 19));
 
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
 
         service.createDailyUvIfNeeded(USER_ID, 7.2);
 
@@ -118,7 +118,7 @@ class NotificationServiceTest {
                 "old content"
         );
 
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
         when(notificationRepository.countByUser_Id(USER_ID)).thenReturn(31L);
         when(notificationRepository.findByUser_IdOrderByCreatedAtAscIdAsc(eq(USER_ID), any(Pageable.class)))
                 .thenReturn(List.of(oldNotification));
@@ -170,7 +170,7 @@ class NotificationServiceTest {
         Clock clock = fixedClock("2026-06-19T03:00:00Z");
         NotificationService service = new NotificationService(notificationRepository, userRepository, clock);
 
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createDailyUvIfNeeded(USER_ID, 7.2))
                 .isInstanceOf(BusinessException.class)
