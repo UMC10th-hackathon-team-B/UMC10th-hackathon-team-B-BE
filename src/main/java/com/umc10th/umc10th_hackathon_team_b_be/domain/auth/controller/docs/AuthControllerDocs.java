@@ -9,6 +9,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
@@ -20,6 +21,7 @@ public interface AuthControllerDocs {
             description = "카카오 액세스 토큰을 전달받아 사용자 식별 후, 기존 회원이면 토큰 발급(HOME), 신규 유저면 가입 대기(TERMS) 상태로 분기합니다.",
             operationId = "createAuthSession"
     )
+    @SecurityRequirements()
     ResponseEntity<ApiResponse<AuthSessionResponse>> createAuthSession(AuthSessionRequest request);
 
     @Operation(
@@ -27,6 +29,7 @@ public interface AuthControllerDocs {
             description = "refresh token을 검증하고 access/refresh token을 재발급합니다.",
             operationId = "reissueAuthToken"
     )
+    @SecurityRequirements()
     ResponseEntity<ApiResponse<AuthTokenReissueResponse>> reissueAuthToken(AuthTokenReissueRequest request);
 
     @Operation(
