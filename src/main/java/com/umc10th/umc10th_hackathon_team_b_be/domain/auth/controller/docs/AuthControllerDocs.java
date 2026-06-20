@@ -64,6 +64,34 @@ public interface AuthControllerDocs {
     );
 
     @Operation(
+            summary = "제출 평가용 테스트 로그인",
+            description = "운영 서버 Swagger 평가용 테스트 계정 JWT를 발급합니다. API 실행 후 accessToken을 복사해 Swagger Authorize에 Bearer {accessToken} 형식으로 입력합니다.",
+            operationId = "createSubmissionTestAuthSession"
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "테스트 계정 인증 토큰 반환",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "SUBMISSION_TEST_LOGIN", value = SwaggerSuccessExamples.AUTH_SESSION_HOME)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "제출 평가용 테스트 로그인이 비활성화된 경우",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(name = "COMMON_404", value = SwaggerErrorExamples.COMMON_404)
+                    )
+            )
+    })
+    @SecurityRequirements()
+    ResponseEntity<ApiResponse<AuthSessionResponse>> createSubmissionTestAuthSession();
+
+    @Operation(
             summary = "Access Token 재발급",
             description = "refresh token을 검증한 뒤 새 access token과 refresh token을 재발급합니다. Authorization 헤더 없이 호출합니다.",
             operationId = "reissueAuthToken"
