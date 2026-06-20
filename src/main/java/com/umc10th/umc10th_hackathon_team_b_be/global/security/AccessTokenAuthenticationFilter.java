@@ -46,6 +46,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return ("POST".equals(request.getMethod()) && "/api/v1/auth-sessions".equals(uri))
+                || ("POST".equals(request.getMethod()) && "/api/v1/auth-sessions/test".equals(uri))
                 || ("POST".equals(request.getMethod()) && "/api/v1/users".equals(uri))
                 || ("POST".equals(request.getMethod()) && "/api/v1/auth-tokens".equals(uri));
     }
