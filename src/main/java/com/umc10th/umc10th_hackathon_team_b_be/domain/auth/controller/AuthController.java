@@ -7,6 +7,7 @@ import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthSessionRespon
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.AuthTokenReissueResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.AuthService;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.SubmissionTestAuthService;
 import com.umc10th.umc10th_hackathon_team_b_be.global.response.ApiResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
 
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthControllerDocs {
 
     private final AuthService authService;
+    private final SubmissionTestAuthService submissionTestAuthService;
 
     @Override
     @PostMapping("/auth-sessions")
@@ -34,6 +36,13 @@ public class AuthController implements AuthControllerDocs {
         AuthSessionResponse response = authService.processKakaoLogin(request);
 
         // TODO: ApiResponse.onSuccess() 등 공통 래퍼 클래스 구현 방식에 맞게 리턴
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Override
+    @PostMapping("/auth-sessions/test")
+    public ResponseEntity<ApiResponse<AuthSessionResponse>> createSubmissionTestAuthSession() {
+        AuthSessionResponse response = submissionTestAuthService.issueSubmissionTestAuthSession();
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

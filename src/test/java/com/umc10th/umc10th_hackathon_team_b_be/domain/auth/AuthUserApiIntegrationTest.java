@@ -4,6 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.dto.KakaoUserInfoResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.auth.service.KakaoApiClient;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.repository.NotificationRepository;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.user.entity.User;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserRepository;
+import com.umc10th.umc10th_hackathon_team_b_be.domain.user.repository.UserTermAgreementRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -33,16 +37,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.submission-test.enabled=true")
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class AuthUserApiIntegrationTest {
+
+    private static final String SUBMISSION_TEST_KAKAO_ID = "submission-test-user";
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserTermAgreementRepository userTermAgreementRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @MockBean
     private KakaoApiClient kakaoApiClient;
@@ -127,6 +142,32 @@ class AuthUserApiIntegrationTest {
                 .andExpect(jsonPath("$.data.nextScreen").value("HOME"))
                 .andExpect(jsonPath("$.data.auth.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.auth.refreshToken").isNotEmpty());
+    }
+
+    @Test
+    void submissionTestLoginCreatesUserDummyDataAndReturnsAuthTokens() throws Exception {
+        Map<String, Object> firstLoginData = submissionTestLogin();
+        User testUser = userRepository.findByKakaoId(SUBMISSION_TEST_KAKAO_ID)
+                .orElseThrow();
+
+        assertThat(firstLoginData.get("nextScreen")).isEqualTo("HOME");
+        assertThat(firstLoginData.get("userId")).isEqualTo(testUser.getId().intValue());
+        assertThat(userTermAgreementRepository.countByUser_Id(testUser.getId())).isEqualTo(3);
+        assertThat(notificationRepository.countByUser_Id(testUser.getId())).isEqualTo(2);
+
+        Map<String, Object> auth = (Map<String, Object>) firstLoginData.get("auth");
+        mockMvc.perform(get("/api/v1/notifications")
+                        .header("Authorization", "Bearer " + auth.get("accessToken")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.unreadCount").value(2));
+
+        waitForNextTokenSecond();
+
+        submissionTestLogin();
+
+        assertThat(userRepository.findByKakaoId(SUBMISSION_TEST_KAKAO_ID)).isPresent();
+        assertThat(userTermAgreementRepository.countByUser_Id(testUser.getId())).isEqualTo(3);
+        assertThat(notificationRepository.countByUser_Id(testUser.getId())).isEqualTo(2);
     }
 
     @Test
@@ -287,6 +328,18 @@ class AuthUserApiIntegrationTest {
         MvcResult result = mockMvc.perform(post("/api/v1/auth-sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("kakaoAccessToken", kakaoAccessToken))))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> body = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {}
+        );
+        return (Map<String, Object>) body.get("data");
+    }
+
+    private Map<String, Object> submissionTestLogin() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/v1/auth-sessions/test"))
                 .andExpect(status().isOk())
                 .andReturn();
 

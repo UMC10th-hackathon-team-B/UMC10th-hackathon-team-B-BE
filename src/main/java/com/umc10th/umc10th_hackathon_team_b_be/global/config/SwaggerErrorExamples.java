@@ -11,6 +11,15 @@ public final class SwaggerErrorExamples {
             }
             """;
 
+    public static final String COMMON_404 = """
+            {
+              "success": false,
+              "code": "COMMON_404",
+              "message": "요청한 리소스를 찾을 수 없습니다.",
+              "data": null
+            }
+            """;
+
     public static final String AUTH_400 = """
             {
               "success": false,
