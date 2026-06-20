@@ -35,7 +35,6 @@ public class AuthController implements AuthControllerDocs {
 
         AuthSessionResponse response = authService.processKakaoLogin(request);
 
-        // TODO: ApiResponse.onSuccess() 등 공통 래퍼 클래스 구현 방식에 맞게 리턴
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
