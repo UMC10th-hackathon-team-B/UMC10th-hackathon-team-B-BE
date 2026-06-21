@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.umc10th.umc10th_hackathon_team_b_be.domain.notification.entity.Notification;
@@ -61,7 +60,8 @@ class NotificationServiceTest {
                 .kakaoId("kakao-id")
                 .build();
 
-        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.markUvNotifiedIfNotToday(USER_ID, LocalDate.of(2026, 6, 19))).thenReturn(1);
+        when(userRepository.getReferenceById(USER_ID)).thenReturn(user);
 
         service.createDailyUvIfNeeded(USER_ID, uvIndex);
 
@@ -75,7 +75,6 @@ class NotificationServiceTest {
         assertThat(notification.getTitle()).isEqualTo(expectedTitle);
         assertThat(notification.getContent()).isEqualTo(expectedContent);
         assertThat(notification.getIsRead()).isFalse();
-        assertThat(user.getLastUvNotifiedDate()).isEqualTo(LocalDate.of(2026, 6, 19));
     }
 
     @Test
@@ -92,12 +91,9 @@ class NotificationServiceTest {
     void createDailyUvIfNeededDoesNotCreateDuplicateInSameDate() {
         Clock clock = fixedClock("2026-06-19T03:00:00Z");
         NotificationService service = new NotificationService(notificationRepository, userRepository, clock);
-        User user = User.builder()
-                .kakaoId("kakao-id")
-                .build();
-        user.markUvNotified(LocalDate.of(2026, 6, 19));
 
-        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.markUvNotifiedIfNotToday(USER_ID, LocalDate.of(2026, 6, 19))).thenReturn(0);
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
 
         service.createDailyUvIfNeeded(USER_ID, 7.2);
 
@@ -118,7 +114,8 @@ class NotificationServiceTest {
                 "old content"
         );
 
-        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.markUvNotifiedIfNotToday(USER_ID, LocalDate.of(2026, 6, 19))).thenReturn(1);
+        when(userRepository.getReferenceById(USER_ID)).thenReturn(user);
         when(notificationRepository.countByUser_Id(USER_ID)).thenReturn(31L);
         when(notificationRepository.findByUser_IdOrderByCreatedAtAscIdAsc(eq(USER_ID), any(Pageable.class)))
                 .thenReturn(List.of(oldNotification));
@@ -170,7 +167,8 @@ class NotificationServiceTest {
         Clock clock = fixedClock("2026-06-19T03:00:00Z");
         NotificationService service = new NotificationService(notificationRepository, userRepository, clock);
 
-        when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.markUvNotifiedIfNotToday(USER_ID, LocalDate.of(2026, 6, 19))).thenReturn(0);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
 
         assertThatThrownBy(() -> service.createDailyUvIfNeeded(USER_ID, 7.2))
                 .isInstanceOf(BusinessException.class)

@@ -55,7 +55,7 @@ class NotificationDailyUvConcurrencyIntegrationTest {
         User user = userRepository.save(User.builder()
                 .kakaoId("notification-concurrency-" + UUID.randomUUID())
                 .build());
-        int requestCount = 2;
+        int requestCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(requestCount);
         CountDownLatch ready = new CountDownLatch(requestCount);
         CountDownLatch start = new CountDownLatch(1);

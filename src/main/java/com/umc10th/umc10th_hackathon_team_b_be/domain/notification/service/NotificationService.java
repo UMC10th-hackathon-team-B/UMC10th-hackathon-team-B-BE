@@ -69,20 +69,21 @@ public class NotificationService {
             return;
         }
 
-        User user = userRepository.findByIdForUpdate(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_404));
-
-        if (today.equals(user.getLastUvNotifiedDate())) {
+        int updatedCount = userRepository.markUvNotifiedIfNotToday(userId, today);
+        if (updatedCount == 0) {
+            if (!userRepository.existsById(userId)) {
+                throw new BusinessException(ErrorCode.USER_404);
+            }
             return;
         }
 
+        User user = userRepository.getReferenceById(userId);
         notificationRepository.save(Notification.createDailyUv(
                 user,
                 resolveDailyUvTitle(uvIndex),
                 resolveDailyUvContent(uvIndex)
         ));
         enforceRetentionLimit(userId);
-        user.markUvNotified(today);
     }
 
     private String resolveDailyUvTitle(double uvIndex) {
