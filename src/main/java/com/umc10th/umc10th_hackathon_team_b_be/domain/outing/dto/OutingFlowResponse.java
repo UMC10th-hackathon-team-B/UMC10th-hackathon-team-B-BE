@@ -135,7 +135,7 @@ public record OutingFlowResponse(
             @Schema(description = "계란 상태 표시명", example = "살짝 노릇한 계란")
             String eggStatusLabel,
 
-            @Schema(description = "화면 표시용 계란 상태 문구", example = "햇빛에 살짝 익고 있어요")
+            @Schema(description = "화면 표시용 계란 상태 문구", example = "차단제 효과가 조금씩 줄어들고 있어요.")
             String message
     ) {
     }

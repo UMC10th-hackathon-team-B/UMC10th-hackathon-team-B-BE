@@ -130,6 +130,16 @@ class OutingAppLaunchIntegrationTest {
     }
 
     @Test
+    void createOutingSessionCalculatesEggBySunscreenRisk() throws Exception {
+        assertCreateOutingSessionEggStatus("BEFORE_5_MINUTES", "SAFE");
+        assertCreateOutingSessionEggStatus("BEFORE_15_MINUTES", "SAFE");
+        assertCreateOutingSessionEggStatus("BEFORE_30_MINUTES", "SAFE");
+        assertCreateOutingSessionEggStatus("BEFORE_60_MINUTES", "LIGHT_TOASTED");
+        assertCreateOutingSessionEggStatus("BEFORE_120_MINUTES", "TOASTED");
+        assertCreateOutingSessionEggStatus("NONE", "DANGER");
+    }
+
+    @Test
     void createOutingSessionUsesSeoulTimeWhenClockZoneIsNotSeoul() throws Exception {
         User user = createUser();
         setClockInstantAtSeoulTime(LocalDateTime.of(2026, 6, 18, 9, 10), UTC_ZONE_ID);
@@ -163,7 +173,7 @@ class OutingAppLaunchIntegrationTest {
         setNow(LocalDateTime.of(2026, 6, 18, 9, 0));
         when(outingWeatherProvider.getCurrentWeather(anyDouble(), anyDouble()))
                 .thenReturn(weather("8.00"));
-        createSession(user, "NONE");
+        createSession(user, "BEFORE_5_MINUTES");
 
         setNow(LocalDateTime.of(2026, 6, 18, 12, 0));
 
@@ -375,6 +385,23 @@ class OutingAppLaunchIntegrationTest {
         return userRepository.save(User.builder()
                 .kakaoId("outing-test-" + UUID.randomUUID())
                 .build());
+    }
+
+    private void assertCreateOutingSessionEggStatus(
+            String sunscreenAppliedOption,
+            String expectedEggStatus
+    ) throws Exception {
+        User user = createUser();
+        setNow(LocalDateTime.of(2026, 6, 18, 9, 10));
+        when(outingWeatherProvider.getCurrentWeather(anyDouble(), anyDouble()))
+                .thenReturn(weather("9.22"));
+
+        mockMvc.perform(post("/api/v1/outing-sessions")
+                        .header("Authorization", bearer(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createSessionJson(sunscreenAppliedOption)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.outing.egg.eggStatus").value(expectedEggStatus));
     }
 
     private Long createSession(User user, String sunscreenAppliedOption) throws Exception {

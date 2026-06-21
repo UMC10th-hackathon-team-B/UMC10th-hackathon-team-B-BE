@@ -167,7 +167,7 @@ public final class SwaggerSuccessExamples {
                   "egg": {
                     "eggStatus": "LIGHT_TOASTED",
                     "eggStatusLabel": "살짝 노릇한 계란",
-                    "message": "햇빛에 살짝 익고 있어요"
+                    "message": "차단제 효과가 조금씩 줄어들고 있어요."
                   },
                   "sunscreen": {
                     "lastSunscreenAppliedAt": "2026-06-18T09:55:00",
