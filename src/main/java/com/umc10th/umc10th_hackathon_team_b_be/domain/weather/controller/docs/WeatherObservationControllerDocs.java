@@ -2,10 +2,13 @@ package com.umc10th.umc10th_hackathon_team_b_be.domain.weather.controller.docs;
 
 import com.umc10th.umc10th_hackathon_team_b_be.global.security.CurrentUserId;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
+import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherObservationRequest;
 import com.umc10th.umc10th_hackathon_team_b_be.domain.weather.dto.WeatherObservationResponse;
 import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerErrorExamples;
 import com.umc10th.umc10th_hackathon_team_b_be.global.config.SwaggerSuccessExamples;
@@ -66,7 +69,6 @@ public interface WeatherObservationControllerDocs {
     })
     ResponseEntity<ApiResponse<WeatherObservationResponse>> getWeatherObservation(
             @Parameter(hidden = true) @CurrentUserId Long userId,
-            @Parameter(description = "현재 위치 위도", example = "37.5172") @RequestParam double latitude,
-            @Parameter(description = "현재 위치 경도", example = "127.0473") @RequestParam double longitude
+            @ParameterObject @Valid @ModelAttribute WeatherObservationRequest request
     );
 }
