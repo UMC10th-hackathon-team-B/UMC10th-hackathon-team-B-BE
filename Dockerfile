@@ -1,6 +1,9 @@
 # Java 21 JDK가 설치된 Temurin 이미지를 기반 이미지로 사용
 FROM eclipse-temurin:21-jdk
 
+ENV TZ=Asia/Seoul
+ENV JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul"
+
 # 컨테이너 내부 작업 디렉토리를 /app으로 설정
 WORKDIR /app
 
