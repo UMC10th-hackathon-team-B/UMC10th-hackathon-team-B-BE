@@ -118,7 +118,6 @@ public class OutingService {
             EggCalculation eggCalculation = calculateEgg(
                     lastSunscreenAppliedAt,
                     now,
-                    now,
                     weather.uvIndex()
             );
 
@@ -264,7 +263,6 @@ public class OutingService {
         BigDecimal previousEggScore = outingSession.getEggScore();
         EggCalculation eggCalculation = calculateEgg(
                 outingSession.getLastSunscreenAppliedAt(),
-                outingSession.getStartedAt(),
                 now,
                 weather.uvIndex()
         );
@@ -387,36 +385,36 @@ public class OutingService {
 
     private EggCalculation calculateEgg(
             LocalDateTime lastSunscreenAppliedAt,
-            LocalDateTime startedAt,
             LocalDateTime now,
             BigDecimal uvIndex
     ) {
         boolean hasSunscreenApplied = lastSunscreenAppliedAt != null;
-        LocalDateTime baseTime = hasSunscreenApplied ? lastSunscreenAppliedAt : startedAt;
-        long elapsedMinutes = elapsedMinutes(baseTime, now);
+        long sunscreenElapsedMinutes = hasSunscreenApplied ? elapsedMinutes(lastSunscreenAppliedAt, now) : 0;
 
-        BigDecimal score = elapsedSegmentScore(elapsedMinutes)
+        BigDecimal score = sunscreenRiskScore(hasSunscreenApplied, sunscreenElapsedMinutes)
                 .multiply(uvWeight(uvIndex))
-                .multiply(sunscreenCorrection(hasSunscreenApplied, elapsedMinutes))
                 .setScale(2, RoundingMode.HALF_UP);
 
         return new EggCalculation(score, eggStatus(score));
     }
 
-    private BigDecimal elapsedSegmentScore(long elapsedMinutes) {
-        if (elapsedMinutes <= 15) {
+    private BigDecimal sunscreenRiskScore(boolean hasSunscreenApplied, long sunscreenElapsedMinutes) {
+        if (!hasSunscreenApplied) {
+            return BigDecimal.valueOf(120);
+        }
+        if (sunscreenElapsedMinutes <= 15) {
             return BigDecimal.TEN;
         }
-        if (elapsedMinutes <= 30) {
-            return BigDecimal.valueOf(25);
+        if (sunscreenElapsedMinutes <= 30) {
+            return BigDecimal.valueOf(15);
         }
-        if (elapsedMinutes <= 60) {
-            return BigDecimal.valueOf(50);
+        if (sunscreenElapsedMinutes <= 60) {
+            return BigDecimal.valueOf(35);
         }
-        if (elapsedMinutes <= 120) {
-            return BigDecimal.valueOf(80);
+        if (sunscreenElapsedMinutes <= 120) {
+            return BigDecimal.valueOf(60);
         }
-        return BigDecimal.valueOf(120);
+        return BigDecimal.valueOf(95);
     }
 
     private BigDecimal uvWeight(BigDecimal uvIndex) {
@@ -430,25 +428,6 @@ public class OutingService {
             return BigDecimal.valueOf(1.5);
         }
         return BigDecimal.valueOf(2.0);
-    }
-
-    private BigDecimal sunscreenCorrection(boolean hasSunscreenApplied, long elapsedMinutes) {
-        if (!hasSunscreenApplied) {
-            return BigDecimal.valueOf(1.0);
-        }
-        if (elapsedMinutes <= 15) {
-            return BigDecimal.valueOf(0.3);
-        }
-        if (elapsedMinutes <= 30) {
-            return BigDecimal.valueOf(0.4);
-        }
-        if (elapsedMinutes <= 60) {
-            return BigDecimal.valueOf(0.5);
-        }
-        if (elapsedMinutes <= 120) {
-            return BigDecimal.valueOf(0.7);
-        }
-        return BigDecimal.valueOf(0.9);
     }
 
     private EggStatus eggStatus(BigDecimal score) {
@@ -479,11 +458,11 @@ public class OutingService {
 
     private String eggStatusMessage(EggStatus eggStatus) {
         return switch (eggStatus) {
-            case SAFE -> "차단제 덕분에 뽀얀 계란이에요";
-            case LIGHT_TOASTED -> "햇빛에 살짝 익고 있어요";
-            case TOASTED -> "차단제가 슬슬 필요해요";
-            case BURNED -> "계란이가 타기 전에 덧발라요";
-            case DANGER -> "계란이를 차단제로 구해줘요";
+            case SAFE -> "차단제 덕분에 뽀얀 계란이에요.";
+            case LIGHT_TOASTED -> "차단제 효과가 조금씩 줄어들고 있어요.";
+            case TOASTED -> "차단제가 슬슬 필요해요.";
+            case BURNED -> "계란이가 타기 전에 덧발라요.";
+            case DANGER -> "계란이를 차단제로 구해줘요.";
         };
     }
 
